@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070812">
+<title>Lost page · Ombli</title>
+<style>
+html,body{height:100%;margin:0}
+body{background:#070812;color:#eef0ff;font:16px/1.5 ui-rounded,"SF Pro Rounded","Nunito","Segoe UI",system-ui,sans-serif;display:grid;place-items:center;text-align:center;
+  background-image:radial-gradient(60vmax 60vmax at 10% 0%,rgba(59,43,214,.45),transparent 60%),radial-gradient(50vmax 50vmax at 100% 100%,rgba(176,34,127,.3),transparent 60%)}
+main{padding:24px;max-width:420px}
+svg{width:150px;height:150px;filter:drop-shadow(0 0 16px rgba(110,243,255,.42));animation:bob 5s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+h1{font-size:23px;line-height:1.25;margin:10px 0 6px}
+p{color:#8f95c2;margin:0 0 20px}
+a{display:inline-block;padding:12px 22px;border-radius:999px;color:#0a0b1c;font-weight:700;text-decoration:none;background:linear-gradient(135deg,#6ef3ff,#9b7bff 60%,#ff6fd8)}
+@media (prefers-reduced-motion:reduce){svg{animation:none}}
+</style>
+</head>
+<body>
+<main>
+  <svg viewBox="0 0 220 220" role="img" aria-label="Ombli, asleep">
+    <defs><radialGradient id="gb" cx="34%" cy="26%" r="90%"><stop offset="0" stop-color="#d9fdff"/><stop offset=".22" stop-color="#6ef3ff"/><stop offset=".62" stop-color="#8e7bff"/><stop offset="1" stop-color="#ff6fd8"/></radialGradient></defs>
+    <ellipse cx="110" cy="206" rx="46" ry="7" fill="#6ef3ff" opacity=".28"/>
+    <path d="M110 62C107 42 119 32 128 24" fill="none" stroke="#b9a8ff" stroke-width="4" stroke-linecap="round"/><circle cx="130" cy="21" r="8" fill="#b6ff6e" opacity=".5"/>
+    <path d="M64 92C40 62 54 42 82 70Z" fill="#b9a8ff"/><path d="M156 92C180 62 166 42 138 70Z" fill="#ff6fd8"/>
+    <ellipse cx="86" cy="192" rx="15" ry="8" fill="#b964e0"/><ellipse cx="134" cy="192" rx="15" ry="8" fill="#d268dc"/>
+    <path d="M110 58C160 58 182 100 178 140C175 178 145 192 110 192C75 192 45 178 42 140C38 100 60 58 110 58Z" fill="url(#gb)"/>
+    <circle cx="70" cy="134" r="9" fill="#ff8fd0" opacity=".6"/><circle cx="150" cy="134" r="9" fill="#ff8fd0" opacity=".6"/>
+    <g fill="none" stroke="#0b0d24" stroke-width="4" stroke-linecap="round"><path d="M70 114Q84 124 98 114"/><path d="M122 114Q136 124 150 114"/></g>
+    <path d="M102 138Q110 147 118 138" fill="none" stroke="#3a1250" stroke-width="3.5" stroke-linecap="round"/>
+  </svg>
+  <h1>That page isn't in the nest.</h1>
+  <p>But a glimmerling lives in this server, and it knows a lot of everyday things. It can keep you company while you find your way.</p>
+  <a id="go" href="./?lost=1">Wake Ombli</a>
+</main>
+<script>
+// On GitHub Pages a project site lives under /<repo>/, so point the button at that folder whatever the lost path was.
+var seg = location.pathname.split("/")[1] || "";
+var base = /\.github\.io$/.test(location.hostname) && seg ? "/" + seg + "/" : "/";
+document.getElementById("go").href = base + "?lost=1";
+</script>
+</body>
+</html>
