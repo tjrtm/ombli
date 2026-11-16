@@ -1,0 +1,18 @@
+Ombli
+https://github.com/tjrtm/ombli
+
+This project bundles third-party software inside index.html:
+
+PyBot (the `bot` package), commit 24cbc0439e07fd015c0747ab3be6e782a42b5c5b
+  https://github.com/huggingface/pybot
+  Licensed under the Apache License, Version 2.0 (see LICENSE).
+  Modified: comments and docstrings were removed to reduce size. No logic was changed.
+
+Pyodide 314.0.8 (pyodide.js, pyodide.asm.mjs, pyodide.asm.wasm, python_stdlib.zip, pyodide-lock.json)
+  https://github.com/pyodide/pyodide
+  Licensed under the Mozilla Public License, Version 2.0.
+  Unmodified. Source code is available at the URL above.
+
+CPython 3.14 and its standard library (included in Pyodide)
+  https://www.python.org
+  Licensed under the Python Software Foundation License Version 2.
