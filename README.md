@@ -30,7 +30,7 @@ The ✦ button in the header switches between modes. Each one is part of the sam
 | --- | --- | --- |
 | Chat | `/` | Just Ombli and you. |
 | Kitchen sprite | `?mode=kitchen` | Big text, the screen stays on, and the chat tidies itself after three quiet minutes. For a tablet on the counter or in a guest room. |
-| Desk pet | `?mode=pet` | Only the creature. It asks itself a question now and then, naps after five minutes without a tap, and counts boops. |
+| Desk pet | `?mode=pet` | Only the creature. It shares a fact from a library of 400, out loud when the voice is on, and counts boops. Every fact is told once before any repeats. How often is set under "Desk pet facts" in the ✦ menu: 10 s, 30 s, 1 min (default), 5 min or a custom gap from 5 s to an hour. With facts off, it naps after five minutes without a tap. |
 | Rule-scroll safari | `?mode=safari` | Shows which of PyBot's modules answered and collects the ones you have found. |
 | Stump the glimmerling | `?mode=stump` | A game: you score when Ombli has to shrug, Ombli scores when it has an answer. First to five. |
 | Guess the rule | `?mode=lesson` | For classrooms: the module behind each reply stays hidden until you guess and tap. |
