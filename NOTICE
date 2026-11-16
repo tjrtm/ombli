@@ -16,3 +16,10 @@ Pyodide 314.0.8 (pyodide.js, pyodide.asm.mjs, pyodide.asm.wasm, python_stdlib.zi
 CPython 3.14 and its standard library (included in Pyodide)
   https://www.python.org
   Licensed under the Python Software Foundation License Version 2.
+
+Optional voice (voice/ and code that loads it on request):
+- voice/en_US-kristin-medium.fp16.onnx is derived from the en_US-kristin-medium Piper voice
+  (https://huggingface.co/rhasspy/piper-voices, MIT), by Bryce Beattie, trained on
+  public-domain LibriVox recordings. Its weights are stored as 16-bit floats; the network is unchanged.
+- ONNX Runtime Web (MIT) and piper-phonemize / espeak-ng (GPL-3.0) are fetched from public CDNs
+  at runtime when the voice is switched on. They are not distributed in this repository.

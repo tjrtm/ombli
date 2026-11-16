@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#070812">
 <title>Ombli · the glimmerling in the server</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3CradialGradient id='g' cx='.35' cy='.3' r='.9'%3E%3Cstop offset='0' stop-color='%23d9fdff'/%3E%3Cstop offset='.3' stop-color='%236ef3ff'/%3E%3Cstop offset='.7' stop-color='%238e7bff'/%3E%3Cstop offset='1' stop-color='%23ff6fd8'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='17' r='13' fill='url(%23g)'/%3E%3Ccircle cx='11.5' cy='16' r='2.6' fill='%230b0d24'/%3E%3Ccircle cx='20.5' cy='16' r='2.6' fill='%230b0d24'/%3E%3C/svg%3E">
 <style>
 :root{
   --bg:#070812; --ink:#eef0ff; --dim:#8f95c2; --line:rgba(255,255,255,.10); --glass:rgba(255,255,255,.055);
@@ -172,6 +173,19 @@ body[data-mode=pet] .muse{display:block;flex:none;box-sizing:border-box;min-heig
 .tools button{flex:1 1 auto;padding:9px 12px;border-radius:14px;border:1px solid var(--line);background:var(--glass);font-size:13.5px}
 .scrolls{display:flex;flex-wrap:wrap;gap:5px;max-height:110px;overflow:auto;margin:0 0 12px}
 .scrolls span{font:10.5px var(--mono);color:var(--lime);border:1px solid rgba(182,255,110,.25);border-radius:999px;padding:2px 8px}
+/* voice */
+.ib.voice .w{display:none}.ib.voice.on .w{display:inline}.ib.voice.on .x{display:none}
+.ib.voice.on{color:var(--cyan);border-color:rgba(110,243,255,.4)}
+.ib.voice.loading{animation:orb 1.2s ease-in-out infinite;color:var(--lime)}
+body.voicing #creature .m-smile,body.voicing #creature .m-flat{display:none}
+body.voicing #creature .m-talk{display:block;animation:none;transform:scaleY(var(--mouth,.3))}
+.styles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 12px}
+.style-btn{padding:10px 8px;border-radius:16px;border:1px solid var(--line);background:var(--glass);text-align:center}
+.style-btn b{display:block;font-size:15px}.style-btn span{display:block;font-size:12px;color:var(--dim);line-height:1.3}
+.style-btn.on{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(110,243,255,.09)}
+.go{margin-top:12px;width:100%;padding:12px;border-radius:16px;font-weight:800;color:#0a0b1c;background:linear-gradient(135deg,var(--cyan),var(--violet) 60%,var(--pink))}
+.go:disabled{opacity:.6}
+.fine{font-size:12px!important;margin:12px 0 0!important}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-iteration-count:1!important}}
 </style>
 </head>
@@ -179,6 +193,7 @@ body[data-mode=pet] .muse{display:block;flex:none;box-sizing:border-box;min-heig
 <div class="sky"><i></i><i></i><i></i></div>
 <header>
   <div class="word"><b>OMBLI</b><div class="status"><span class="dot" id="dot"></span><span id="status">curled up asleep…</span></div></div>
+  <button class="ib voice" id="voiceBtn" aria-label="Ombli's voice" title="Ombli's voice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path class="w" d="M15.5 9.5a3.5 3.5 0 0 1 0 5"/><path class="w" d="M18 7a7 7 0 0 1 0 10"/><path class="x" d="M16 10l4 4M20 10l-4 4"/></svg></button>
   <button class="ib" id="modesBtn" aria-label="Ways to keep Ombli" title="Ways to keep Ombli"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/></svg></button>
   <button class="ib" id="newBtn" aria-label="Start over" title="Start over"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
   <button class="ib" id="infoBtn" aria-label="About Ombli" title="About Ombli"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5v.01"/></svg></button>
@@ -246,6 +261,7 @@ body[data-mode=pet] .muse{display:block;flex:none;box-sizing:border-box;min-heig
   <label class="toggle">Show the thought behind each reply <input type="checkbox" id="metaToggle"></label>
   <div class="stat" id="stat">Still asleep.</div>
   <div class="stat" id="net"></div>
+  <div class="stat" id="voiceNet" hidden></div>
   <button class="close" id="closeAbout">Back to Ombli</button>
 </div></dialog>
 
@@ -258,9 +274,136 @@ body[data-mode=pet] .muse{display:block;flex:none;box-sizing:border-box;min-heig
     <button type="button" id="shareBtn">Copy a link</button>
     <button type="button" id="fullBtn">Full screen</button>
     <button type="button" id="saveBtn">Save for offline</button>
+    <button type="button" id="voiceOpen">Voice</button>
   </div>
   <button class="close" id="closeModes">Back to Ombli</button>
 </div></dialog>
+
+<dialog id="voiceDlg"><div class="sheet">
+  <h2>Give Ombli a voice</h2>
+  <p>Ombli's voice is a small neural voice (Piper) that runs inside this tab. It downloads once, about 45 MB, and then works offline. Replies are turned into sound on your device: nothing you type is sent anywhere.</p>
+  <div class="styles" id="styleList"></div>
+  <div class="stat" id="voiceStat">Not downloaded yet.</div>
+  <button class="go" id="voiceGo" type="button">Give Ombli a voice</button>
+  <button class="close" id="closeVoice" type="button">Back to Ombli</button>
+  <p class="fine">Voice by <a href="https://github.com/rhasspy/piper" target="_blank" rel="noopener">Piper</a> (MIT) with the “kristin” voice by Bryce Beattie, trained on public-domain LibriVox recordings. It runs on <a href="https://onnxruntime.ai" target="_blank" rel="noopener">ONNX Runtime Web</a> (MIT) and espeak-ng (GPL-3.0), both loaded from public CDNs.</p>
+</div></dialog>
+
+<script type="text/plain" id="voice-src">
+// Ombli's voice: Piper, a small neural text-to-speech model, running in this worker.
+// Only the voice files are downloaded, once, and kept in the browser's cache. The text it speaks never leaves the tab.
+const ORT = "https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.30.0/";
+const PHON = "https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize";
+const CACHE = "ombli-voice-1";
+let ort = null, session = null, cfg = null, phon = null, phonWasm = null, phonData = null, phonOut = [], gen = 0;
+const jobs = []; let working = false;
+
+const sizes = {}, got = {};
+function progress() {
+  let a = 0, b = 0; for (const k in sizes) { a += Math.min(got[k] || 0, sizes[k]); b += sizes[k]; }
+  postMessage({type: "progress", pct: b ? Math.min(99, Math.floor(a / b * 100)) : 0});
+}
+async function grab(urls, key, expected) {       // first URL that works; served from the cache when we have it
+  sizes[key] = expected; got[key] = 0;
+  let cache = null;
+  try { cache = await caches.open(CACHE); } catch (e) {}
+  for (const url of urls) {
+    try { const hit = cache && await cache.match(url); if (hit) { const b = new Uint8Array(await hit.arrayBuffer()); got[key] = expected; progress(); return b; } } catch (e) {}
+  }
+  let lastErr = null;
+  for (const url of urls) {
+    try {
+      postMessage({type: "net"});
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(res.status + " for " + url);
+      const reader = res.body.getReader(), parts = []; let n = 0;
+      for (;;) { const {done, value} = await reader.read(); if (done) break; parts.push(value); n += value.length; got[key] = n; if (parts.length % 16 === 0) progress(); }
+      const out = new Uint8Array(n); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; }
+      got[key] = expected; progress();
+      try { if (cache) await cache.put(url, new Response(out)); } catch (e) {}
+      return out;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error("couldn't fetch " + key);
+}
+const text = (b) => new TextDecoder().decode(b);
+const asUrl = (b) => URL.createObjectURL(new Blob([b], {type: "text/javascript"}));
+
+async function makePhon() {
+  return createPiperPhonemize({
+    print: (l) => phonOut.push(l), printErr: () => {}, locateFile: (u) => u, noInitialRun: true,
+    wasmBinary: phonWasm, getPreloadedPackage: () => phonData.buffer.slice(0),
+  });
+}
+async function phonemize(t) {
+  for (let tries = 0; tries < 2; tries++) {
+    try {
+      phonOut = [];
+      phon.callMain(["-l", cfg.espeak.voice, "--input", JSON.stringify([{text: t}]), "--espeak_data", "/espeak-ng-data"]);
+      const ids = [];
+      for (const l of phonOut) { try { ids.push(...JSON.parse(l).phoneme_ids); } catch (e) {} }
+      return ids;
+    } catch (e) { phon = await makePhon(); }
+  }
+  return [];
+}
+function sentences(t) {                          // short pieces so the first one plays quickly
+  t = t.replace(/\*[^*]*\*/g, " ").replace(/[—–]/g, ", ").replace(/\s+/g, " ").trim();
+  const raw = t.match(/[^.!?…;:]+[.!?…;:]*["')\]]*\s*/g) || [t], out = [];
+  for (const s of raw) {
+    const last = out.length - 1;
+    if (last >= 0 && (out[last].length < 18 || s.trim().length < 6)) out[last] += s; else out.push(s);
+  }
+  return out.map((s) => s.trim()).filter((s) => /[a-z0-9]/i.test(s));
+}
+
+async function init(m) {
+  postMessage({type: "progress", pct: 0});
+  const [model, conf, ortJs, ortWasm, phonJs, pw, pd] = await Promise.all([
+    grab(m.model, "model", 32.4e6), grab(m.config, "config", 5e3),
+    grab([ORT + "ort.wasm.bundle.min.mjs"], "ortjs", 7.3e4), grab([ORT + "ort-wasm-simd-threaded.wasm"], "ortwasm", 14.2e6),
+    grab([PHON + ".js"], "phonjs", 1.2e5), grab([PHON + ".wasm"], "phonwasm", 6.4e5), grab([PHON + ".data"], "phondata", 18.1e6),
+  ]);
+  cfg = JSON.parse(text(conf)); phonWasm = pw; phonData = pd;
+  importScripts(asUrl(phonJs));
+  const mod = await import(asUrl(ortJs));
+  ort = mod.InferenceSession ? mod : mod.default;
+  ort.env.wasm.numThreads = 1; ort.env.wasm.proxy = false; ort.env.wasm.wasmBinary = ortWasm.buffer;
+  session = await ort.InferenceSession.create(model, {executionProviders: ["wasm"], graphOptimizationLevel: "all"});
+  phon = await makePhon();
+  postMessage({type: "ready", rate: cfg.audio.sample_rate});
+}
+async function speak(m) {
+  const mine = gen;
+  for (const s of sentences(m.text)) {
+    if (mine !== gen) return;
+    const ids = await phonemize(s);
+    if (!ids.length) continue;
+    const t0 = performance.now();
+    const out = await session.run({
+      input: new ort.Tensor("int64", BigInt64Array.from(ids, BigInt), [1, ids.length]),
+      input_lengths: new ort.Tensor("int64", BigInt64Array.from([BigInt(ids.length)]), [1]),
+      scales: new ort.Tensor("float32", Float32Array.from([cfg.inference.noise_scale, cfg.inference.length_scale * m.stretch, cfg.inference.noise_w]), [3]),
+    });
+    const pcm = Float32Array.from(out.output.data);
+    if (mine !== gen) return;
+    postMessage({type: "audio", id: m.id, pcm, ms: Math.round(performance.now() - t0)}, [pcm.buffer]);
+    await new Promise((r) => setTimeout(r, 0));   // lets a "stop" in
+  }
+  if (mine === gen) postMessage({type: "done", id: m.id});
+}
+async function work() {
+  if (working) return; working = true;
+  while (jobs.length) { const j = jobs.shift(); try { await speak(j); } catch (e) { postMessage({type: "error", text: String(e && e.message || e)}); } }
+  working = false;
+}
+onmessage = async (e) => {
+  const m = e.data;
+  if (m.type === "init") { try { await init(m); } catch (err) { postMessage({type: "fail", text: String(err && err.message || err)}); } }
+  else if (m.type === "speak") { gen += 1; jobs.length = 0; jobs.push(m); work(); }
+  else if (m.type === "stop") { gen += 1; jobs.length = 0; }
+};
+</script>
 
 <script type="text/plain" id="worker-src">
 // Python itself (Pyodide 314.0.8) is bundled in this file, so nothing is downloaded.
@@ -503,7 +646,7 @@ function addBot(text, act, meta) {
   const b = document.createElement("div"); b.className = "bubble"; row.appendChild(b);
   if (meta) { const m = document.createElement("div"); m.className = "meta"; m.textContent = meta; m.onclick = () => m.classList.toggle("open"); row.appendChild(m); }
   thread.appendChild(row);
-  speak(b, text);
+  speak(b, text); voiceSay(text);
 }
 let speakTick = null;
 function speak(el, text) {            // Ombli "says" the reply: words appear while its mouth moves.
@@ -549,7 +692,7 @@ $("form").addEventListener("submit", (e) => { e.preventDefault(); submit(input.v
 function submit(raw) {
   const text = raw.replace(/\s+/g, " ").trim();
   if (!text) return;
-  lastActive = Date.now(); input.value = ""; grow(); updateSend(); lastQ = text;
+  lastActive = Date.now(); input.value = ""; grow(); updateSend(); lastQ = text; voiceHush();
   addUser(text); queue.push(text); pump();
 }
 function pump() {
@@ -561,7 +704,7 @@ function hello() { $("intro").style.display = "none"; const sp = $("sparks"); sp
 
 function newChat(focus) {
   if (worker && ready) worker.postMessage({type: "reset"});
-  queue.length = 0; showTyping(false); thread.innerHTML = ""; document.body.classList.remove("chatting");
+  queue.length = 0; showTyping(false); thread.innerHTML = ""; document.body.classList.remove("chatting"); voiceHush();
   score = {you: 0, ombli: 0}; refreshHud();
   if (ready) hello(); if (focus) input.focus();
 }
@@ -588,7 +731,7 @@ function muse(act, text) {
   const s = document.createElement("span"); box.appendChild(s);
   if (text) speak(s, text);
 }
-function nap() { napping = true; clearTimeout(moodTimer); creature.setAttribute("class", "s-sleep"); document.body.classList.add("asleep"); setStatus("napping · boop to wake", "ready"); }
+function nap() { voiceHush(); napping = true; clearTimeout(moodTimer); creature.setAttribute("class", "s-sleep"); document.body.classList.add("asleep"); setStatus("napping · boop to wake", "ready"); }
 function wake() { if (!napping) return; napping = false; document.body.classList.remove("asleep"); mood(""); lastTouch = lastMuse = Date.now(); refreshHud(); }
 
 function refreshHud() {
@@ -698,6 +841,133 @@ setInterval(() => {                 // slow life: kitchen tidies itself, the des
 setMode(P.get("mode"));
 if (P.get("q")) setTimeout(() => submit(P.get("q").slice(0, 400)), 0);
 
+/* ---------- voice: Piper in a worker, played through Web Audio ---------- */
+// Pitch comes from playing the audio faster; Piper speaks slower by the same amount first, so only the pitch changes.
+const STYLES = {
+  glimmer: ["Glimmer", "bright and bubbly", 1.32, 1.06],
+  sprout: ["Sprout", "tiny and squeaky", 1.55, 1.1],
+  dusk: ["Dusk", "soft and sleepy", 1.12, 0.94],
+};
+const SAMPLE = "Mrrp! Can you hear me? This is my voice now. Ask me something everyday!";
+const vstore = store.get("ombli-voice", {}) || {};
+const voice = {on: !!vstore.on, style: STYLES[vstore.style] ? vstore.style : "glimmer", downloaded: !!vstore.downloaded,
+  state: "off", worker: null, ctx: null, analyser: null, next: 0, live: new Set(), id: 0, fetched: 0, pct: 0, err: ""};
+const saveVoice = () => store.set("ombli-voice", {on: voice.on, style: voice.style, downloaded: voice.downloaded});
+const voiceAsset = (f) => new URL("voice/" + f, location.href).href;
+const HF = "https://huggingface.co/rhasspy/piper-voices/resolve/e9ab671f2a0e50a701b34361136ba3e6a3a9eb0c/en/en_US/kristin/medium/";
+
+function audioCtx() {
+  if (voice.ctx) return voice.ctx;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  voice.ctx = new AC();
+  voice.analyser = voice.ctx.createAnalyser(); voice.analyser.fftSize = 512;
+  voice.analyser.connect(voice.ctx.destination);
+  return voice.ctx;
+}
+for (const t of ["pointerdown", "keydown"]) addEventListener(t, () => { if (voice.ctx && voice.ctx.state === "suspended") voice.ctx.resume(); }, true);
+
+function loadVoice() {
+  if (voice.worker) return;
+  voice.state = "loading"; voice.err = ""; refreshVoice();
+  try { voice.worker = new Worker(URL.createObjectURL(new Blob([$("voice-src").textContent], {type: "text/javascript"}))); }
+  catch (e) { voice.state = "error"; voice.err = "this page isn't allowed to start the voice here"; return refreshVoice(); }
+  voice.worker.onmessage = (e) => {
+    const m = e.data;
+    if (m.type === "net") { voice.fetched += 1; refreshVoice(); }
+    else if (m.type === "progress") { voice.pct = m.pct; refreshVoice(); }
+    else if (m.type === "ready") {
+      voice.state = "ready"; voice.rate = m.rate || 22050; voice.downloaded = true; saveVoice(); refreshVoice();
+      if (voice.wantSample) { voice.wantSample = false; voiceSay(SAMPLE, true); }
+    } else if (m.type === "audio") voicePlay(m);
+    else if (m.type === "done") { if (m.id === voice.id) voice.doneId = m.id; }
+    else if (m.type === "fail") { voice.state = "error"; voice.err = m.text; voice.worker.terminate(); voice.worker = null; refreshVoice(); }
+    else if (m.type === "error") { voice.err = m.text; refreshVoice(); }
+  };
+  voice.worker.onerror = (e) => { if (e.preventDefault) e.preventDefault(); voice.state = "error"; voice.err = e.message || "the voice worker stopped"; voice.worker = null; refreshVoice(); };
+  voice.worker.postMessage({type: "init", model: [voiceAsset("en_US-kristin-medium.fp16.onnx"), HF + "en_US-kristin-medium.onnx"],
+    config: [voiceAsset("en_US-kristin-medium.onnx.json"), HF + "en_US-kristin-medium.onnx.json"]});
+}
+function voiceSay(text, force) {
+  if (!(voice.on || force) || voice.state !== "ready" || napping) return;
+  const ctx = audioCtx(); if (!ctx || ctx.state !== "running") return;
+  voiceHush();
+  const s = STYLES[voice.style];
+  voice.id += 1; voice.next = 0;
+  voice.worker.postMessage({type: "speak", id: voice.id, text, stretch: s[2] / s[3]});
+}
+function voiceHush() {
+  if (voice.worker) voice.worker.postMessage({type: "stop"});
+  voice.id += 1;
+  for (const src of voice.live) { try { src.stop(); } catch (e) {} }
+  voice.live.clear(); voiceMouth();
+}
+function voicePlay(m) {
+  if (m.id !== voice.id || !voice.ctx) return;
+  const ctx = voice.ctx, s = STYLES[voice.style], rate = voice.rate || 22050;
+  const buf = ctx.createBuffer(1, m.pcm.length, rate); buf.copyToChannel(m.pcm, 0);
+  const src = ctx.createBufferSource(); src.buffer = buf; src.playbackRate.value = s[2]; src.connect(voice.analyser);
+  const at = Math.max(ctx.currentTime + 0.04, voice.next);
+  src.start(at); voice.next = at + buf.duration / s[2] + 0.14;
+  voice.live.add(src); src.onended = () => { voice.live.delete(src); };
+  voice.lastMs = m.ms; voiceMouth();
+}
+const voiceWave = new Float32Array(512);
+function voiceMouth() {                  // the mouth follows how loud Ombli is right now
+  const on = voice.live.size > 0;
+  document.body.classList.toggle("voicing", on);
+  if (!on) { creature.style.removeProperty("--mouth"); return; }
+  if (voice.raf) return;
+  const tick = () => {
+    voice.raf = 0;
+    if (!voice.live.size) return voiceMouth();
+    voice.analyser.getFloatTimeDomainData(voiceWave);
+    let sum = 0; for (const v of voiceWave) sum += v * v;
+    creature.style.setProperty("--mouth", Math.min(1.25, 0.12 + Math.sqrt(sum / voiceWave.length) * 7).toFixed(2));
+    voice.raf = requestAnimationFrame(tick);
+  };
+  voice.raf = requestAnimationFrame(tick);
+}
+
+function refreshVoice() {
+  const b = $("voiceBtn"), go = $("voiceGo");
+  b.classList.toggle("on", voice.on && voice.state === "ready");
+  b.classList.toggle("loading", voice.state === "loading");
+  b.setAttribute("aria-pressed", String(voice.on && voice.state === "ready"));
+  b.title = voice.state === "ready" ? (voice.on ? "Mute Ombli" : "Let Ombli speak") : "Give Ombli a voice";
+  go.disabled = voice.state === "loading";
+  if (voice.state === "loading") go.textContent = `Growing a voice… ${voice.pct}%`;
+  else if (voice.state === "ready") go.textContent = voice.on ? "Mute Ombli" : "Let Ombli speak";
+  else go.textContent = voice.downloaded ? "Wake the voice" : "Give Ombli a voice (about 45 MB, once)";
+  $("voiceStat").textContent =
+    voice.state === "loading" ? (voice.downloaded ? "Waking the voice from this browser's cache…" : `Downloading the voice: ${voice.pct}%. It stays cached afterwards.`) :
+    voice.state === "ready" ? `Voice ready${voice.lastMs ? ` · last sentence took ${voice.lastMs} ms to make` : ""} · tap a style to hear it` :
+    voice.state === "error" ? `The voice couldn't start: ${voice.err}` : (voice.downloaded ? "Downloaded before; it wakes from the cache." : "Not downloaded yet.");
+  for (const c of document.querySelectorAll(".style-btn")) c.classList.toggle("on", c.dataset.style === voice.style);
+  if (voice.state === "loading") setStatus(`growing a voice… ${voice.pct}%`, "ready"); else if (ready && !napping) refreshHud();
+  $("voiceNet").hidden = !voice.fetched;
+  $("voiceNet").textContent = `voice files downloaded this visit: ${voice.fetched} (only the voice; your words stay here)`;
+}
+for (const key of Object.keys(STYLES)) {
+  const c = document.createElement("button"); c.type = "button"; c.className = "style-btn"; c.dataset.style = key;
+  const t = document.createElement("b"); t.textContent = STYLES[key][0]; const d = document.createElement("span"); d.textContent = STYLES[key][1];
+  c.append(t, d);
+  c.onclick = () => { voice.style = key; saveVoice(); refreshVoice(); audioCtx(); if (voice.ctx) voice.ctx.resume(); if (voice.state === "ready") voiceSay(SAMPLE, true); };
+  $("styleList").appendChild(c);
+}
+function voiceToggle() {
+  audioCtx(); if (voice.ctx) voice.ctx.resume();     // inside the tap, so the browser lets it play
+  if (voice.state === "ready") { voice.on = !voice.on; saveVoice(); if (voice.on) voiceSay(SAMPLE); else voiceHush(); refreshVoice(); return; }
+  if (voice.state === "loading") return;
+  voice.on = true; voice.wantSample = true; saveVoice(); loadVoice();
+}
+$("voiceBtn").onclick = () => { if (voice.state === "ready") voiceToggle(); else { refreshVoice(); $("voiceDlg").showModal(); } };
+$("voiceGo").onclick = voiceToggle;
+$("voiceOpen").onclick = () => { $("modes").close(); refreshVoice(); $("voiceDlg").showModal(); };
+$("closeVoice").onclick = () => $("voiceDlg").close();
+$("voiceDlg").addEventListener("click", (e) => { if (e.target === $("voiceDlg")) $("voiceDlg").close(); });
+refreshVoice();
+
 /* ---------- boot ---------- */
 const PAYLOADS = ["pyodide.js", "pyodide.asm.mjs", "pyodide.asm.wasm", "python_stdlib.zip", "pyodide-lock.json", "bot.zip"];
 function decodeB64(b64) {
@@ -739,11 +1009,12 @@ function start() {
       setStatus("awake · lives in this tab", "ready"); setProgress(100, false); $("progress").classList.add("done");
       $("stat").textContent = `${m.modules} thought-modules · Python ${m.python} · woke in ${((performance.now() - t0) / 1000).toFixed(1)}s` + (m.cached ? " · remembered from last visit" : "");
       totalModules = m.modules; refreshHud();
+      if (voice.on && voice.downloaded) setTimeout(() => { audioCtx(); loadVoice(); }, 400);
       if (queue.length) { greeted = true; mood(""); pump(); } else hello();
     } else if (m.type === "net") { if (ready && !saving) { netCount += 1; refreshNet(); } }
     else if (m.type === "reply" && silent.has(m.id)) {
       const q = silent.get(m.id); silent.delete(m.id); busy = false;
-      if (mode === "pet" && !napping) { react(kindOf(m.reply, m.module)); muse(`“${q}”`, m.reply); } else mood("");
+      if (mode === "pet" && !napping) { react(kindOf(m.reply, m.module)); muse(`“${q}”`, m.reply); voiceSay("Hmm. " + q + " " + m.reply); } else mood("");
       afterReply(m.module, "care"); pump();
     } else if (m.type === "reply") {
       busy = false; showTyping(false);

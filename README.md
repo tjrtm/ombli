@@ -8,7 +8,9 @@ Ombli's mind is [PyBot](https://github.com/huggingface/pybot), a chatbot made of
 
 ## What is in here
 
-`index.html` is the entire project: the page, the creature, Python itself and PyBot's code, bundled into one self-contained file of about 17 MB. It makes no network requests after it loads.
+`index.html` is the whole chat: the page, the creature, Python itself and PyBot's code, bundled into one self-contained file of about 17 MB. It makes no network requests after it loads, unless you turn on the voice.
+
+`voice/` holds Ombli's optional voice model (see below).
 
 ## Run it yourself
 
@@ -44,6 +46,22 @@ The About sheet counts the network requests made since Ombli woke, so you can wa
 
 `404.html` is a small lost-page screen for static hosts such as GitHub Pages. It sends visitors to Ombli with `?lost=1`, which changes the greeting.
 
+## Ombli's voice
+
+The speaker button in the header gives Ombli a voice. It is [Piper](https://github.com/rhasspy/piper), a small neural text-to-speech model, running in a Web Worker inside the tab. Nothing you type or Ombli says is sent anywhere: the only network traffic is the one-time download of the voice files, about 45 MB:
+
+| File | From | Size (transferred) |
+| --- | --- | --- |
+| `voice/en_US-kristin-medium.fp16.onnx` | this repo | 32 MB |
+| espeak-ng pronunciation data and phonemizer ([`@diffusionstudio/piper-wasm`](https://www.npmjs.com/package/@diffusionstudio/piper-wasm) 1.0.0) | jsDelivr | about 9.5 MB |
+| [ONNX Runtime Web](https://onnxruntime.ai) 1.30.0 | cdnjs | about 2.5 MB |
+
+The files are kept in the browser's Cache Storage, so later visits wake the voice without downloading anything. The About sheet counts the voice downloads separately from everything else.
+
+The cute part is a pitch trick: Piper is asked to speak slower by some factor, and the audio is then played faster by the same factor, which raises the pitch and formants without changing the speed. The three styles use different factors: Glimmer (×1.32), Sprout (×1.55) and Dusk (×1.12).
+
+The voice is the [`kristin` medium voice](https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_US/kristin/medium) by Bryce Beattie, trained on public-domain LibriVox recordings. The copy in `voice/` stores its weights as 16-bit floats, which halves the download; they are converted back to 32-bit when the model loads, and its output matches the original. If `voice/` is missing, for example when the page is saved and opened as a file, it falls back to the original 63 MB model on Hugging Face.
+
 ## What Ombli can and cannot do
 
 It is good at everyday questions: cooking, cleaning, household fixes, simple maths, and remembering what you told it during the chat. It cannot write essays, poems or code, has no live data, and knows nothing outside its rule tables.
@@ -55,5 +73,6 @@ Every answer is PyBot's own text, unchanged. Only the wake-up greeting, the smal
 - PyBot © Hugging Face, [Apache License 2.0](LICENSE). Its code is bundled with comments and docstrings removed; its logic is unchanged.
 - Pyodide 314.0.8, [Mozilla Public License 2.0](https://github.com/pyodide/pyodide/blob/main/LICENSE), which includes CPython under the [PSF License](https://docs.python.org/3/license.html).
 - The Ombli page and creature are released under the Apache License 2.0.
+- Voice (optional, downloaded only when switched on): Piper and the `kristin` voice (MIT, from [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices); trained on public-domain LibriVox recordings), ONNX Runtime Web (MIT), and the piper-phonemize build of [espeak-ng](https://github.com/espeak-ng/espeak-ng) (GPL-3.0), which is loaded from jsDelivr and is not included in this repository.
 
 See [NOTICE](NOTICE) for details.
