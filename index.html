@@ -139,6 +139,39 @@ dialog::backdrop{background:rgba(4,5,14,.7);backdrop-filter:blur(6px)}
 .toggle input:checked{background:var(--violet)}.toggle input:checked::after{transform:translateX(18px)}
 .stat{font:11.5px/1.5 var(--mono);color:var(--dim);padding:10px 0 2px;border-top:1px solid var(--line)}
 .close{margin-top:10px;width:100%;padding:12px;border-radius:16px;background:var(--glass);border:1px solid var(--line);font-weight:700}
+/* modes */
+.hud{flex:none;align-self:center;margin:8px 14px 0;padding:5px 13px;border-radius:999px;border:1px solid var(--line);background:var(--glass);font:11.5px/1.4 var(--mono);color:var(--cyan);text-align:center}
+.hud[hidden]{display:none}
+.note{align-self:center;font:12px var(--mono);color:var(--lime);padding:6px 12px;border:1px solid rgba(182,255,110,.28);border-radius:14px;text-align:center;overflow-wrap:anywhere}
+.muse{display:none}
+.muse i{display:block;font-size:13px;color:var(--cyan);opacity:.85;margin-bottom:4px}
+body[data-mode=safari] .meta{display:block}
+body[data-mode=lesson] .meta{display:block;cursor:pointer;font-size:0}
+body[data-mode=lesson] .meta::before{content:"\25B8  which rule answered? guess, then tap";font-size:10.5px;color:var(--cyan)}
+body[data-mode=lesson] .meta.open{font-size:10.5px}
+body[data-mode=lesson] .meta.open::before{content:"\25BE  "}
+body[data-mode=kitchen]{font-size:21px}
+body[data-mode=kitchen] textarea{font-size:21px}
+body[data-mode=kitchen] .spark{font-size:17px;padding:11px 18px}
+body[data-mode=kitchen] .act{font-size:15px}
+body[data-mode=kitchen] .thread,body[data-mode=kitchen] .composer{max-width:900px}
+body[data-mode=kitchen] .send{width:52px;height:52px}
+body[data-mode=pet] main,body[data-mode=pet] footer,body[data-mode=pet] .progress.done{display:none}
+body[data-mode=pet] .stage{flex:1;min-height:0;height:auto}
+body[data-mode=pet] #creature{height:min(92%,84vw)}
+body[data-mode=pet] .ring{height:min(108%,98vw)}
+body[data-mode=pet] .ring.r2{height:min(84%,76vw)}
+body[data-mode=pet] .muse{display:block;flex:none;box-sizing:border-box;min-height:6.4em;max-width:600px;width:100%;align-self:center;padding:4px 22px calc(22px + var(--safe-b));text-align:center}
+.sheet{max-height:calc(100dvh - 40px);overflow:auto}
+.modes{display:grid;gap:8px;margin:4px 0 12px}
+.mode-btn{text-align:left;padding:10px 14px;border-radius:16px;border:1px solid var(--line);background:var(--glass)}
+.mode-btn b{display:block;font-size:15px}
+.mode-btn span{display:block;font-size:13px;color:var(--dim);line-height:1.35}
+.mode-btn.on{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(110,243,255,.09)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;padding-top:12px;border-top:1px solid var(--line)}
+.tools button{flex:1 1 auto;padding:9px 12px;border-radius:14px;border:1px solid var(--line);background:var(--glass);font-size:13.5px}
+.scrolls{display:flex;flex-wrap:wrap;gap:5px;max-height:110px;overflow:auto;margin:0 0 12px}
+.scrolls span{font:10.5px var(--mono);color:var(--lime);border:1px solid rgba(182,255,110,.25);border-radius:999px;padding:2px 8px}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-iteration-count:1!important}}
 </style>
 </head>
@@ -146,6 +179,7 @@ dialog::backdrop{background:rgba(4,5,14,.7);backdrop-filter:blur(6px)}
 <div class="sky"><i></i><i></i><i></i></div>
 <header>
   <div class="word"><b>OMBLI</b><div class="status"><span class="dot" id="dot"></span><span id="status">curled up asleep…</span></div></div>
+  <button class="ib" id="modesBtn" aria-label="Ways to keep Ombli" title="Ways to keep Ombli"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/></svg></button>
   <button class="ib" id="newBtn" aria-label="Start over" title="Start over"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
   <button class="ib" id="infoBtn" aria-label="About Ombli" title="About Ombli"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5v.01"/></svg></button>
 </header>
@@ -186,6 +220,8 @@ dialog::backdrop{background:rgba(4,5,14,.7);backdrop-filter:blur(6px)}
   <div class="fx" id="fx"></div>
 </div>
 <div class="progress indet" id="progress"><i></i></div>
+<div class="hud" id="hud" hidden></div>
+<div class="muse" id="muse" aria-live="polite"></div>
 
 <main id="scroller">
   <section class="intro" id="intro">
@@ -209,7 +245,21 @@ dialog::backdrop{background:rgba(4,5,14,.7);backdrop-filter:blur(6px)}
   <p>Its mind is <a href="https://github.com/huggingface/pybot" target="_blank" rel="noopener">PyBot</a> (Apache-2.0): about 640,000 lines of hand-written Python rules, with no AI model. Everything Ombli answers comes from those rules, running in your own browser tab, so nothing you type leaves your device. Only its greeting and gestures were added on top.</p>
   <label class="toggle">Show the thought behind each reply <input type="checkbox" id="metaToggle"></label>
   <div class="stat" id="stat">Still asleep.</div>
+  <div class="stat" id="net"></div>
   <button class="close" id="closeAbout">Back to Ombli</button>
+</div></dialog>
+
+<dialog id="modes"><div class="sheet">
+  <h2>Ways to keep Ombli</h2>
+  <div class="modes" id="modeList"></div>
+  <div class="stat" id="scrollStat" hidden></div>
+  <div class="scrolls" id="scrollList"></div>
+  <div class="tools">
+    <button type="button" id="shareBtn">Copy a link</button>
+    <button type="button" id="fullBtn">Full screen</button>
+    <button type="button" id="saveBtn">Save for offline</button>
+  </div>
+  <button class="close" id="closeModes">Back to Ombli</button>
 </div></dialog>
 
 <script type="text/plain" id="worker-src">
@@ -249,7 +299,7 @@ async function boot(files, buildId) {
   const realFetch = self.fetch.bind(self);
   self.fetch = (input, init) => {
     const url = typeof input === "string" ? input : (input && input.url) || String(input);
-    if (!url.startsWith(BASE)) return realFetch(input, init);
+    if (!url.startsWith(BASE)) { say({type: "net"}); return realFetch(input, init); }
     const name = url.slice(BASE.length).split(/[?#]/)[0];
     if (!f[name]) return Promise.resolve(new Response("not bundled", {status: 404}));
     const type = name.endsWith(".wasm") ? "application/wasm" : name.endsWith(".json") ? "application/json" : "application/octet-stream";
@@ -356,6 +406,7 @@ else self.__pybotIn = handle;
 </script>
 
 <script>
+const P = new URLSearchParams(location.search);
 const BUILD_ID = "acbc28b67c41691c";
 const SPARKS = ["Hi Ombli, I'm Sam", "How long should I boil an egg?", "Why do onions make you cry?", "My kettle is full of limescale", "What's 15% of 80?", "How do I get red wine out of a carpet?"];
 const HELLOS = [
@@ -370,6 +421,18 @@ const ACTS = {
   unsure: ["*tilts its head*", "*antenna droops a bit*"],
   answer: ["*rummages through its rule-scrolls*", "*antenna blinks twice*", "*hums softly in Python*", "*ears twitch*", ""],
 };
+const LOST_HELLO = "Mrrp! The page you were looking for isn't in my nest, but I am. I'm Ombli, the glimmerling who lives in this server. Ask me something everyday while you're here?";
+const MUSINGS = ["How long should I boil an egg?", "Why do onions make you cry?", "My kettle is full of limescale", "How do I get red wine out of a carpet?", "What's 15% of 80?", "How do I keep bananas fresh?", "Why is the sky blue?", "How do I remove a coffee stain?", "How long does rice take to cook?", "What's 12 times 12?", "How do I unclog a sink?", "How do I get rid of fruit flies?"];
+const BOOPS = ["*purrs in Python*", "*glows a little brighter*", "*antenna does a loop*", "*wiggles happily*", "*hums a tiny tune*"];
+const MODES = {
+  chat: ["Chat", "Just Ombli and you.", "awake · lives in this tab"],
+  kitchen: ["Kitchen sprite", "Big text, the screen stays on, and the chat tidies itself after a few quiet minutes. For a tablet on the counter or in a guest room.", "kitchen sprite · screen stays on"],
+  pet: ["Desk pet", "Only the creature. It thinks out loud now and then, naps when ignored, and counts your boops.", "desk pet"],
+  safari: ["Rule-scroll safari", "Every reply comes from one of Ombli's rule-scrolls. Collect as many different ones as you can.", "on safari"],
+  stump: ["Stump the glimmerling", "Take turns asking everyday questions. You score when Ombli has to shrug, Ombli scores when it knows. First to five.", "playing stump"],
+  lesson: ["Guess the rule", "For classrooms: the rule behind each reply stays hidden until you guess and tap. No AI model, only rules.", "lesson · no AI model here"],
+};
+const WIN = 5, UNSURE = /\b(can't (see|check|tell)|not sure|don't know|rather not guess|search)\b/i;
 const STAGES = {"Starting Python…": "stirring in its nest…", "Unpacking PyBot…": "gathering its memories…", "Loading modules…": "opening its eyes…"};
 
 const $ = (id) => document.getElementById(id);
@@ -406,10 +469,12 @@ input.addEventListener("focus", () => look(innerWidth / 2, innerHeight));
 creature.addEventListener("click", () => {
   lastActive = Date.now();
   if (!ready) { burst(["z", "…"], 2); return; }
-  mood("happy", 1500); burst(["♥", "✦", "✧"], 4);
+  wake(); boops += 1; store.set("ombli-boops", boops);
+  mood("happy", 1500); burst(["♥", "✦", "✧"], boops % 10 ? 4 : 9);
+  if (mode === "pet") { muse(pick(BOOPS), boops % 10 ? "" : boops + " boops!"); refreshHud(); }
 });
 setInterval(() => {            // idle life: glance about, sometimes wiggle
-  if (!ready || busy) return;
+  if (!ready || busy || napping) return;
   if (Date.now() - lastActive > 45000 && Math.random() < .3) { mood("happy", 1200); burst(["✦", "♪"], 2); lastActive = Date.now() - 20000; }
   else if (!matchMedia("(hover: hover)").matches || Date.now() - lastActive > 8000)
     look(innerWidth * Math.random(), innerHeight * (.2 + Math.random() * .8));
@@ -418,7 +483,8 @@ setInterval(() => {            // idle life: glance about, sometimes wiggle
 /* ---------- chat ---------- */
 try { if (localStorage.getItem("ombli-meta") === "1") { document.body.classList.add("show-meta"); $("metaToggle").checked = true; } } catch (e) {}
 $("metaToggle").onchange = (e) => { document.body.classList.toggle("show-meta", e.target.checked); try { localStorage.setItem("ombli-meta", e.target.checked ? "1" : "0"); } catch (err) {} };
-for (const s of SPARKS) { const b = document.createElement("button"); b.className = "spark"; b.type = "button"; b.textContent = s; b.onclick = () => submit(s); $("sparks").appendChild(b); }
+const customSparks = (P.get("sparks") || "").split("|").map((s) => s.trim().slice(0, 80)).filter(Boolean).slice(0, 8);
+for (const s of (customSparks.length ? customSparks : SPARKS)) { const b = document.createElement("button"); b.className = "spark"; b.type = "button"; b.textContent = s; b.onclick = () => submit(s); $("sparks").appendChild(b); }
 
 function setStatus(t, state) { $("status").textContent = t; $("dot").className = "dot" + (state ? " " + state : ""); }
 function setProgress(pct, indet) { const p = $("progress"); p.classList.toggle("indet", !!indet); p.querySelector("i").style.width = indet ? "" : pct + "%"; }
@@ -435,16 +501,21 @@ function addBot(text, act, meta) {
   const row = document.createElement("div"); row.className = "row bot";
   if (act) { const a = document.createElement("div"); a.className = "act"; a.textContent = act; row.appendChild(a); }
   const b = document.createElement("div"); b.className = "bubble"; row.appendChild(b);
-  if (meta) { const m = document.createElement("div"); m.className = "meta"; m.textContent = meta; row.appendChild(m); }
+  if (meta) { const m = document.createElement("div"); m.className = "meta"; m.textContent = meta; m.onclick = () => m.classList.toggle("open"); row.appendChild(m); }
   thread.appendChild(row);
-  // Ombli "says" the reply: words appear while its mouth moves.
+  speak(b, text);
+}
+let speakTick = null;
+function speak(el, text) {            // Ombli "says" the reply: words appear while its mouth moves.
   const words = text.split(" "), step = Math.max(12, Math.min(45, 2200 / words.length));
   let i = 0; creature.classList.add("s-talk");
   const tick = setInterval(() => {
-    i += 1; b.textContent = words.slice(0, i).join(" "); scrollDown();
-    if (i >= words.length) { clearInterval(tick); creature.classList.remove("s-talk"); }
+    i += 1; el.textContent = words.slice(0, i).join(" "); scrollDown();
+    if (i >= words.length) { clearInterval(tick); if (speakTick === tick) creature.classList.remove("s-talk"); }
   }, step);
+  speakTick = tick;
 }
+function addNote(text) { const d = document.createElement("div"); d.className = "note"; d.textContent = text; thread.appendChild(d); scrollDown(); }
 function addSys(text) { const d = document.createElement("div"); d.className = "sys"; d.textContent = text; thread.appendChild(d); scrollDown(); }
 let typingRow = null;
 function showTyping(on) {
@@ -452,13 +523,21 @@ function showTyping(on) {
   else if (!on && typingRow) { typingRow.remove(); typingRow = null; }
 }
 
-function react(reply, module) {      // gesture only: the words are always PyBot's own
+function kindOf(reply, module) {
   const m = module || "";
-  if (/safety|urgent|grief|loss|hardpast|harm|trouble|carers|ward|night/.test(m)) { mood("care", 6000); return pick(ACTS.care); }
-  if (/greeting|first_line|talkto/.test(m)) { mood("happy", 1600); burst(["✦", "✧", "♥"], 3); return pick(ACTS.hello); }
-  if (/memory|recap|said|callback|what_they|on_record|name_taken|their/.test(m)) { mood("", 0); burst(["✧"], 1); return pick(ACTS.memory); }
-  if (/\b(can't (see|check|tell)|not sure|don't know|rather not guess|search)\b/i.test(reply)) { mood("confused", 2200); burst(["?"], 1); return pick(ACTS.unsure); }
-  mood("", 0); return pick(ACTS.answer);
+  if (/safety|urgent|grief|loss|hardpast|harm|trouble|carers|ward|night/.test(m)) return "care";
+  if (UNSURE.test(reply)) return "unsure";   // PyBot's shrugs come from its greeting module, so read the words first
+  if (/greeting|first_line|talkto/.test(m)) return "hello";
+  if (/memory|recap|said|callback|what_they|on_record|name_taken|their/.test(m)) return "memory";
+  return "answer";
+}
+function react(kind) {               // gesture only: the words are always PyBot's own
+  if (kind === "care") mood("care", 6000);
+  else if (kind === "hello") { mood("happy", 1600); burst(["✦", "✧", "♥"], 3); }
+  else if (kind === "memory") { mood("", 0); burst(["✧"], 1); }
+  else if (kind === "unsure") { mood("confused", 2200); burst(["?"], 1); }
+  else mood("", 0);
+  return pick(ACTS[kind]);
 }
 
 function updateSend() { send.disabled = !input.value.trim(); }
@@ -470,7 +549,7 @@ $("form").addEventListener("submit", (e) => { e.preventDefault(); submit(input.v
 function submit(raw) {
   const text = raw.replace(/\s+/g, " ").trim();
   if (!text) return;
-  lastActive = Date.now(); input.value = ""; grow(); updateSend();
+  lastActive = Date.now(); input.value = ""; grow(); updateSend(); lastQ = text;
   addUser(text); queue.push(text); pump();
 }
 function pump() {
@@ -478,16 +557,146 @@ function pump() {
   busy = true; showTyping(true); mood("think");
   worker.postMessage({type: "turn", id: nextId++, text: queue.shift()});
 }
-function hello() { $("intro").style.display = "none"; const sp = $("sparks"); sp.style.cssText = "margin:16px auto 0;max-width:720px"; scroller.appendChild(sp); mood("happy", 1600); burst(["✦", "✧", "♥"], 4); addBot(pick(HELLOS), "*blinks awake*", "ombli · greeting"); }
+function hello() { $("intro").style.display = "none"; const sp = $("sparks"); sp.style.cssText = "margin:16px auto 0;max-width:720px"; scroller.appendChild(sp); mood("happy", 1600); burst(["✦", "✧", "♥"], 4); addBot(P.has("lost") && !greeted ? LOST_HELLO : pick(HELLOS), "*blinks awake*", "ombli · greeting"); greeted = true; }
 
-$("newBtn").onclick = () => {
+function newChat(focus) {
   if (worker && ready) worker.postMessage({type: "reset"});
   queue.length = 0; showTyping(false); thread.innerHTML = ""; document.body.classList.remove("chatting");
-  if (ready) hello(); input.focus();
-};
+  score = {you: 0, ombli: 0}; refreshHud();
+  if (ready) hello(); if (focus) input.focus();
+}
+$("newBtn").onclick = () => newChat(true);
 $("infoBtn").onclick = () => $("about").showModal();
 $("closeAbout").onclick = () => $("about").close();
 $("about").addEventListener("click", (e) => { if (e.target === $("about")) $("about").close(); });
+
+/* ---------- modes: other ways to keep Ombli, all still inside this one page ---------- */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+let mode = "chat", lastQ = "", greeted = false, napping = false, lastMuse = Date.now(), totalModules = 0, netCount = 0, saving = false;
+let score = {you: 0, ombli: 0}, boops = +store.get("ombli-boops", 0) || 0;
+let scrolls = store.get("ombli-scrolls", []); if (!Array.isArray(scrolls)) scrolls = [];
+let lastTouch = Date.now();        // real taps and keys only (the idle wiggle moves lastActive on its own)
+for (const t of ["pointerdown", "keydown"]) addEventListener(t, () => { lastTouch = Date.now(); }, true);
+const silent = new Map();           // turns Ombli asked itself (desk pet), shown beside the creature instead of in the chat
+
+function muse(act, text) {
+  const box = $("muse"); box.textContent = "";
+  if (act) { const i = document.createElement("i"); i.textContent = act; box.appendChild(i); }
+  const s = document.createElement("span"); box.appendChild(s);
+  if (text) speak(s, text);
+}
+function nap() { napping = true; clearTimeout(moodTimer); creature.setAttribute("class", "s-sleep"); document.body.classList.add("asleep"); setStatus("napping · boop to wake", "ready"); }
+function wake() { if (!napping) return; napping = false; document.body.classList.remove("asleep"); mood(""); lastTouch = lastMuse = Date.now(); refreshHud(); }
+
+function refreshHud() {
+  let t = "";
+  if (mode === "safari") t = `✧ ${scrolls.length}${totalModules ? " of " + totalModules : ""} rule-scrolls found`;
+  else if (mode === "stump") t = `you ${score.you} · ${score.ombli} Ombli · first to ${WIN}`;
+  else if (mode === "lesson") t = "which rule will answer? guess, then tap under the reply";
+  $("hud").textContent = t; $("hud").hidden = !t;
+  if (ready && !napping) setStatus(mode === "pet" ? `desk pet · ${boops} boop${boops === 1 ? "" : "s"}` : MODES[mode][2], "ready");
+  $("scrollStat").hidden = !scrolls.length;
+  $("scrollStat").textContent = `Rule-scrolls found so far: ${scrolls.length}${totalModules ? " of " + totalModules : ""}`;
+  const list = $("scrollList"); list.textContent = "";
+  for (const name of scrolls) { const c = document.createElement("span"); c.textContent = name; list.appendChild(c); }
+}
+function afterReply(module, kind) {
+  if (module && !scrolls.includes(module)) {
+    scrolls.push(module); store.set("ombli-scrolls", scrolls);
+    if (mode === "safari") { burst(["✧", "✦"], 3); addNote(`✧ new rule-scroll: ${module}`); }
+  }
+  if (mode === "stump" && kind !== "hello" && kind !== "care") {
+    if (kind === "unsure" || !module) { score.you += 1; addNote("Stumped! Point to you."); }
+    else { score.ombli += 1; addNote("Ombli had an answer. Point to Ombli."); }
+    if (score.you >= WIN || score.ombli >= WIN) {
+      const won = score.you >= WIN;
+      addNote(won ? `You win ${score.you} to ${score.ombli}. Ask again for a rematch.` : `Ombli wins ${score.ombli} to ${score.you}. Ask again for a rematch.`);
+      setTimeout(() => { mood(won ? "confused" : "happy", 2600); burst(won ? ["?", "!"] : ["♥", "✦", "♪"], 6); }, 900);
+      score = {you: 0, ombli: 0};
+    }
+  }
+  refreshHud();
+}
+
+let lock = null, wantLock = false;
+async function wakeLock(on) {
+  wantLock = on;
+  try {
+    if (on && !lock && navigator.wakeLock) { lock = await navigator.wakeLock.request("screen"); lock.onrelease = () => { lock = null; }; }
+    else if (!on && lock) { const l = lock; lock = null; await l.release(); }
+  } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && wantLock) wakeLock(true); });
+
+function setMode(m) {
+  mode = MODES[m] ? m : "chat";
+  document.body.dataset.mode = mode;
+  try { const u = new URL(location.href); if (mode === "chat") u.searchParams.delete("mode"); else u.searchParams.set("mode", mode); history.replaceState(null, "", u); } catch (e) {}
+  for (const b of document.querySelectorAll(".mode-btn")) b.classList.toggle("on", b.dataset.mode === mode);
+  score = {you: 0, ombli: 0}; wake(); lastTouch = lastMuse = Date.now();
+  wakeLock(mode === "kitchen" || mode === "pet");
+  if (mode === "pet") muse("*looks up at you*", ""); else $("muse").textContent = "";
+  refreshHud(); scrollDown();
+}
+for (const key of Object.keys(MODES)) {
+  const b = document.createElement("button"); b.type = "button"; b.className = "mode-btn"; b.dataset.mode = key;
+  const t = document.createElement("b"); t.textContent = MODES[key][0]; const d = document.createElement("span"); d.textContent = MODES[key][1];
+  b.append(t, d); b.onclick = () => { setMode(key); $("modes").close(); }; $("modeList").appendChild(b);
+}
+$("modesBtn").onclick = () => { refreshHud(); $("modes").showModal(); };
+$("hud").onclick = () => { if (mode === "safari") $("modesBtn").onclick(); };
+$("closeModes").onclick = () => $("modes").close();
+$("modes").addEventListener("click", (e) => { if (e.target === $("modes")) $("modes").close(); });
+
+function flash(btn, text) { if (!btn.dataset.label) btn.dataset.label = btn.textContent; btn.textContent = text; clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = btn.dataset.label; }, 2400); }
+const pageUrl = () => location.href.split(/[?#]/)[0];
+$("shareBtn").onclick = async () => {       // a link that opens Ombli in this mode, already answering the last question
+  const u = new URL(pageUrl());
+  if (mode !== "chat") u.searchParams.set("mode", mode);
+  if (customSparks.length) u.searchParams.set("sparks", customSparks.join("|"));
+  if (lastQ) u.searchParams.set("q", lastQ);
+  try { await navigator.clipboard.writeText(u.href); flash($("shareBtn"), lastQ ? "Link to that question copied" : "Link copied"); }
+  catch (e) { prompt("Copy this link:", u.href); }
+};
+if (!document.documentElement.requestFullscreen) $("fullBtn").hidden = true;
+$("fullBtn").onclick = () => { try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); } catch (e) {} $("modes").close(); };
+$("saveBtn").onclick = async () => {        // the whole creature is this one file, so it can be kept and opened offline
+  const b = $("saveBtn");
+  if (location.protocol === "file:") return flash(b, "Already a file on this device");
+  try {
+    flash(b, "Packing…"); saving = true;
+    const r = await fetch(pageUrl()).finally(() => { saving = false; }); if (!r.ok) throw new Error("fetch");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(await r.blob()); a.download = "ombli.html";
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    flash(b, "Saved ombli.html");
+  } catch (e) { flash(b, "Couldn't save. Try your browser's Save page"); }
+};
+
+/* privacy, shown rather than promised: count anything this page fetches once Ombli is awake
+   ("Save for offline" re-downloads this page itself, which is not counted) */
+function refreshNet() {
+  $("net").textContent = `network requests since Ombli woke: ${netCount} · ` + (navigator.onLine ? "you're online (switch on airplane mode, it keeps working)" : "you're offline, and it still works");
+}
+try { new PerformanceObserver((l) => { for (const e of l.getEntries()) if (ready && /^https?:/.test(e.name) && e.name !== pageUrl()) netCount += 1; refreshNet(); }).observe({type: "resource"}); } catch (e) {}
+addEventListener("online", refreshNet); addEventListener("offline", refreshNet); refreshNet();
+
+setInterval(() => {                 // slow life: kitchen tidies itself, the desk pet muses and naps
+  if (!ready || busy || queue.length || document.hidden) return;
+  const idle = Date.now() - lastTouch;
+  if (mode === "kitchen" && idle > 180000 && thread.children.length > 1) { newChat(false); lastTouch = Date.now(); return; }
+  if (mode !== "pet" || napping) return;
+  if (idle > 300000) return nap();
+  if (Date.now() - lastMuse < 50000) return;
+  lastMuse = Date.now(); busy = true; mood("think");
+  const id = nextId++, q = pick(MUSINGS); silent.set(id, q); muse("*wonders about something*", "");
+  worker.postMessage({type: "turn", id, text: q});
+}, 5000);
+
+setMode(P.get("mode"));
+if (P.get("q")) setTimeout(() => submit(P.get("q").slice(0, 400)), 0);
 
 /* ---------- boot ---------- */
 const PAYLOADS = ["pyodide.js", "pyodide.asm.mjs", "pyodide.asm.wasm", "python_stdlib.zip", "pyodide-lock.json", "bot.zip"];
@@ -529,15 +738,21 @@ function start() {
       ready = true; document.body.classList.remove("asleep");
       setStatus("awake · lives in this tab", "ready"); setProgress(100, false); $("progress").classList.add("done");
       $("stat").textContent = `${m.modules} thought-modules · Python ${m.python} · woke in ${((performance.now() - t0) / 1000).toFixed(1)}s` + (m.cached ? " · remembered from last visit" : "");
-      if (queue.length) { mood(""); pump(); } else hello();
+      totalModules = m.modules; refreshHud();
+      if (queue.length) { greeted = true; mood(""); pump(); } else hello();
+    } else if (m.type === "net") { if (ready && !saving) { netCount += 1; refreshNet(); } }
+    else if (m.type === "reply" && silent.has(m.id)) {
+      const q = silent.get(m.id); silent.delete(m.id); busy = false;
+      if (mode === "pet" && !napping) { react(kindOf(m.reply, m.module)); muse(`“${q}”`, m.reply); } else mood("");
+      afterReply(m.module, "care"); pump();
     } else if (m.type === "reply") {
       busy = false; showTyping(false);
-      const act = react(m.reply, m.module);
-      addBot(m.reply, act, `${m.module || "fallback"} · ${m.ms} ms`); pump();
+      const kind = kindOf(m.reply, m.module), act = react(kind);
+      addBot(m.reply, act, `${m.module || "fallback"} · ${m.ms} ms`); afterReply(m.module, kind); pump();
     } else if (m.type === "error") {
       if (!ready && !fellBack) { worker.terminate(); return runOnPage(); }
       if (!ready) return fail(m.text);
-      busy = false; showTyping(false); mood("confused", 2500); addSys("Ombli tripped over a cable: " + m.text); pump();
+      silent.delete(m.id); busy = false; showTyping(false); mood("confused", 2500); addSys("Ombli tripped over a cable: " + m.text); pump();
     }
   }
 }
